@@ -1,0 +1,85 @@
+/* Google Font */
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Prata&display=swap");
+
+@import "tailwindcss";
+
+/* Theme variables */
+@theme {
+  --color-primary: #1f2937; /* Dark charcoal – main text, buttons */
+  --color-primary-dark: #111827; /* Almost black – hover, active states */
+  --color-primary-light: #374151; /* Medium charcoal – secondary text */
+  --font-primary: "Outfit", sans-serif;
+}
+
+/* Tailwind Layer Customization */
+@layer base {
+  body {
+    font-family: var(--font-primary);
+    pointer-events: auto; 
+    cursor: default;     
+  }
+}
+.prata-regular {
+  font-family: "Prata", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+::-webkit-scrollbar {
+  display: none;
+}
+/* Custom Classes */
+.swiper-button-prev,
+.swiper-button-next {
+  @apply px-4 py-2 ring-1 ring-primary-light rounded-full bg-white text-gray-900 text-base;
+}
+
+.swiper-button-prev {
+  left: -40px; /* push left button outside the card */
+}
+
+.swiper-button-next {
+  right: -40px; /* push right button outside the card */
+}
+
+.swiper-button-prev:hover,
+.swiper-button-next:hover {
+  @apply bg-primary text-white;
+}
+/* Move pagination bullets lower, create space from top of card container */
+.swiper-pagination {
+  top: 100%; /* place below the card */
+  margin-top: 20px; /* adjust spacing from the card */
+  position: relative; /* make sure top & margin work */
+}
+
+.swiper-pagination-bullet-active {
+  background-color: var(--color-primary); /* primary color */
+  transform: scale(1.2); /* slightly bigger active bullet */
+}
+
+.swiper-slide > div {
+  min-height: 300px; /* adjust based on your content */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* keeps content top aligned */
+}
+
+ /* animate-infinite-scroll */
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-infinite-scroll {
+  animation: scroll 20s linear infinite;
+}
+
+/* Pause the slider when the user hovers over it */
+.animate-infinite-scroll:hover {
+  animation-play-state: paused;
+}
