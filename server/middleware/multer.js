@@ -4,7 +4,7 @@ import multer from "multer";
 
 const storage = multer.diskStorage({
     filename: function(req, file, callback){
-        callback(null, Date.now() + file.originalname) // using Date.now() prevent duplicate name errors
+        callback(null, Date.now() + file.originalname) 
     }
 })
 

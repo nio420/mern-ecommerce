@@ -16,6 +16,7 @@ const onSubmitHandler = async (e) => {
       const response = await axios.post(url, { email, password });
       
       if(response.data.success){
+        sessionStorage.setItem('token', response.data.token);
         setToken(response.data.token)
       } else {
         toast.error(response.data.message)
