@@ -4,6 +4,7 @@ import validator from "validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+
 const createToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET);
 };
@@ -39,6 +40,17 @@ const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     const exists = await userModel.findOne({ email });
+
+    // --- THE EASY TYPO FIX
+    const badDomains = ["gamil.com", "gmal.com", "yaho.com", "hotmal.com"];
+    const userDomain = email.split("@")[1];
+
+    if (badDomains.includes(userDomain)) {
+      return res.json({
+        success: false,
+        message: "Email typo detected! Did you mean gmail.com?",
+      });
+    }
 
     // checking user already exist or not
     if (exists) {

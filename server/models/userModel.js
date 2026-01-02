@@ -8,9 +8,9 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     cartData: { type: Object, default: {} },
-    phone: { type: String, default: "01XXXXXXXXX" }, 
+    phone: { type: String, default: "01XXXXXXXXX" },
     address: { type: String, default: "No Address Added" },
-    date: { type: Number, default: Date.now }
+    date: { type: Number, default: Date.now },
   },
   { minimize: false }
 );

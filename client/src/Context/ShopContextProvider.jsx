@@ -1,47 +1,65 @@
 import { ShopContext } from "./ShopContext";
-//import { products } from "../Utils/assets";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 
-
+// Context Provider component
 const ShopContextProvider = ({ children }) => {
+  // Backend base URL from environment variable
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
-  const [products, setProducts] = useState([]);
-  const [showFilter, setShowFilter] = useState(false);
-  const [filterProducts, setFilterProducts] = useState([]);
-  const [catagory, setCatagory] = useState([]);
-  const [subcatagory, setSubCatagory] = useState([]);
-  const [sortType, setSortType] = useState("relavent");
-  const [search, setSearch] = useState("");
-  const [ShowSearch, setShowSearch] = useState(false);
+
+  // ===================== PRODUCT STATES =====================
+  const [products, setProducts] = useState([]); // All products
+  const [showFilter, setShowFilter] = useState(false); // Filter sidebar toggle
+  const [filterProducts, setFilterProducts] = useState([]); // Filtered products list
+  const [catagory, setCatagory] = useState([]); // Selected categories
+  const [subcatagory, setSubCatagory] = useState([]); // Selected subcategories
+  const [sortType, setSortType] = useState("relavent"); // Sorting type
+  const [search, setSearch] = useState(""); // Search text
+  const [ShowSearch, setShowSearch] = useState(false); // Search visibility
+
+  // ===================== CART STATES =====================
   const [cartItems, setCartItems] = useState(
     JSON.parse(localStorage.getItem("cartItems")) || {}
-  );
-  const [cartData, setCartData] = useState([]);
-  const [method, setMethod] = useState("cod");
-  const [token, setToken] = useState(localStorage.getItem('token') || '');
+  ); // Cart data stored by productId -> size -> quantity
+
+  const [cartData, setCartData] = useState([]); // Flattened cart array for UI
+  const [method, setMethod] = useState("cod"); // Payment method
+
+  // ===================== AUTH STATES =====================
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
   const [userData, setUserData] = useState(false);
+
+  // ===================== FORM STATES =====================
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Fixed delivery fee
   const deliveryFee = 10;
 
-  // Syncs the cart state to the browser's local storage whenever it is updated
+  // ======================================================
+  // Sync cart items with localStorage whenever cart changes
+  // ======================================================
   useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
   }, [cartItems]);
 
+  // ======================================================
+  // Set filtered products whenever products update
+  // ======================================================
   useEffect(() => {
     setTimeout(() => {
       setFilterProducts(products);
     }, 0);
   }, [products]);
 
+  // Toggle filter sidebar
   const toogleFilter = () => {
     setShowFilter((prev) => !prev);
   };
 
+  // Toggle category filter
   const toogleCatagory = (e) => {
     if (catagory.includes(e.target.value)) {
       setCatagory((prev) => prev.filter((item) => item !== e.target.value));
@@ -50,6 +68,7 @@ const ShopContextProvider = ({ children }) => {
     }
   };
 
+  // Toggle subcategory filter
   const toogleSubCatagory = (e) => {
     if (subcatagory.includes(e.target.value)) {
       setSubCatagory((prev) => prev.filter((item) => item !== e.target.value));
@@ -58,7 +77,9 @@ const ShopContextProvider = ({ children }) => {
     }
   };
 
-  // apply filters
+  // ======================================================
+  // Apply search, category, and subcategory filters
+  // ======================================================
   const applyFilter = () => {
     let productsCopy = [...products];
 
@@ -83,13 +104,15 @@ const ShopContextProvider = ({ children }) => {
     setFilterProducts(productsCopy);
   };
 
-  // run filter whenever category or subcategory changes
+  // Run filter whenever dependencies change
   useEffect(() => {
     applyFilter();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [catagory, subcatagory, ShowSearch, search]);
 
-  // sort logic
+  // ======================================================
+  // Sorting logic
+  // ======================================================
   const sortProducts = () => {
     const filterProductsCopy = [...products];
 
@@ -117,6 +140,9 @@ const ShopContextProvider = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortType]);
 
+  // ======================================================
+  // Add product to cart
+  // ======================================================
   const addToCart = async (itemId, size) => {
     if (!size) {
       toast.error("Please Select the Product Size");
@@ -135,7 +161,9 @@ const ShopContextProvider = ({ children }) => {
       cartData[itemId] = {};
       cartData[itemId][size] = 1;
     }
+
     setCartItems(cartData);
+
     toast.success("Product Added to Cart", {
       autoClose: 2000,
       closeOnClick: true,
@@ -143,18 +171,21 @@ const ShopContextProvider = ({ children }) => {
       draggable: true,
     });
 
-    if(token){
+    // Sync cart to backend if user is logged in
+    if (token) {
       try {
-        const url = `${backendUrl}/api/cart/add`
-        await axios.post(url, {itemId, size}, {headers: {token}})
-
+        const url = `${backendUrl}/api/cart/add`;
+        await axios.post(url, { itemId, size }, { headers: { token } });
       } catch (error) {
         console.log(error);
-        toast.error(error.message)
+        toast.error(error.message);
       }
     }
   };
 
+  // ======================================================
+  // Get total cart item count
+  // ======================================================
   const getCartCounts = () => {
     let totalCounts = 0;
     for (const items in cartItems) {
@@ -171,6 +202,9 @@ const ShopContextProvider = ({ children }) => {
     return totalCounts;
   };
 
+  // ======================================================
+  // Prepare cart data array for UI rendering
+  // ======================================================
   useEffect(() => {
     let tempData = [];
     for (const items in cartItems) {
@@ -187,23 +221,32 @@ const ShopContextProvider = ({ children }) => {
     setCartData(tempData);
   }, [cartItems]);
 
+  // ======================================================
+  // Update cart item quantity
+  // ======================================================
   const updateQuantity = async (itemId, size, quantity) => {
     let cartData = structuredClone(cartItems);
     cartData[itemId][size] = quantity;
     setCartItems(cartData);
 
-      if(token){
+    if (token) {
       try {
-        const url = `${backendUrl}/api/cart/update`
-        await axios.post(url, {itemId, size, quantity}, {headers: {token}})
-
+        const url = `${backendUrl}/api/cart/update`;
+        await axios.post(
+          url,
+          { itemId, size, quantity },
+          { headers: { token } }
+        );
       } catch (error) {
         console.log(error);
-        toast.error(error.message)
+        toast.error(error.message);
       }
     }
   };
 
+  // ======================================================
+  // Calculate total cart amount
+  // ======================================================
   const getCartAmount = () => {
     let totalAmount = 0;
     for (const items in cartItems) {
@@ -222,14 +265,16 @@ const ShopContextProvider = ({ children }) => {
     return totalAmount;
   };
 
+  // Handle payment method change
   const methodHandle = (props) => {
     setMethod(props);
   };
 
-  // get product data
+  // ======================================================
+  // Fetch product list from backend
+  // ======================================================
   const getProductsData = async () => {
     try {
-      // get backend url and fetch it by axios
       const url = `${backendUrl}/api/product/list`;
       const response = await axios.get(url);
       if (response.data.success) {
@@ -243,52 +288,64 @@ const ShopContextProvider = ({ children }) => {
     }
   };
 
-  
-  const getUserCard = async (token)=> {
+  // ======================================================
+  // Fetch user cart from backend
+  // ======================================================
+  const getUserCard = async (token) => {
     try {
-        const url = `${backendUrl}/api/cart/get`
-        const res = await axios.post(url, {}, {headers: {token}})  
-        if(res.data.success){
-          setCartItems(res.data.cartData)
-        }    
+      const url = `${backendUrl}/api/cart/get`;
+      const res = await axios.post(url, {}, { headers: { token } });
+      if (res.data.success) {
+        setCartItems(res.data.cartData);
+      }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);      
+      toast.error(error.message);
     }
-  }
+  };
+
   useEffect(() => {
     getProductsData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Sync token and fetch cart on login
   useEffect(() => {
     if (!token && localStorage.getItem("token")) {
       setToken(localStorage.getItem("token"));
-      getUserCard(localStorage.getItem("token")) 
+      getUserCard(localStorage.getItem("token"));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-const getUserProfile = async () => {
-    try {        
-        const response = await axios.get(backendUrl + '/api/user/profile', { headers: { token } });
-        if (response.data.success) {
-            setUserData(response.data.user);
-        } else {
-            console.log("3. Backend Error Message:", response.data.message);
-        }
+  // ======================================================
+  // Fetch logged-in user profile
+  // ======================================================
+  const getUserProfile = async () => {
+    try {
+      const response = await axios.get(backendUrl + "/api/user/profile", {
+        headers: { token },
+      });
+      if (response.data.success) {
+        setUserData(response.data.user);
+      } else {
+        console.log("3. Backend Error Message:", response.data.message);
+      }
     } catch (error) {
-        console.error("4. Axios Fetch Error:", error); 
+      console.error("4. Axios Fetch Error:", error);
     }
-};
+  };
 
-    useEffect(() => {
-        if (token) {
-            getUserProfile();
-        }
+  useEffect(() => {
+    if (token) {
+      getUserProfile();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [token]);
+  }, [token]);
 
+  // ======================================================
+  // Values exposed to entire app
+  // ======================================================
   const value = {
     products,
     deliveryFee,
@@ -321,11 +378,11 @@ const getUserProfile = async () => {
     setCartItems,
     cartItems,
     userData,
-    setUserData
+    setUserData,
   };
 
+  // Provide context to children components
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 };
 
 export default ShopContextProvider;
-
