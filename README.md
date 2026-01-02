@@ -212,7 +212,7 @@ cd mern-ecommerce
 2️⃣ Backend Setup
 cd server
 npm install
-npm run dev
+npm run server
 
 Runs on:
 http://localhost:5000
