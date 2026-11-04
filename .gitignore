@@ -2,8 +2,6 @@
 node_modules/
 
 # environment files
-.env
-.env.local
 
 # build files
 dist/
@@ -15,3 +13,12 @@ yarn-error.log*
 
 # OS files
 .DS_Store
+
+# Environment variables & secrets (added by GitHub Guardian)
+*.env
+!.env.example
+!.env.sample
+.envrc
+.venv/
+venv/
+config.bat
